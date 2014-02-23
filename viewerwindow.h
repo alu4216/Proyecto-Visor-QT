@@ -17,6 +17,7 @@
 #include <QCameraViewfinder>
 #include <QPainter>
 #include <QDateTime>
+#include <QFont>
 #include "acerca.h"
 #include "preferenciadialog.h"
 #include "capturebuffer.h"

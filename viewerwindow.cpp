@@ -172,12 +172,16 @@ void ViewerWindow::actualizar_s(int i)
 }
 void ViewerWindow::image_s(const QImage &image)
 {
-  QPainter paint;
+  //QPainter paint;
   QTime time = QTime::currentTime();
   QString timeString = time.toString();
-
   QPixmap pixmap;
   pixmap=pixmap.fromImage(image);
+  QPainter paint(&pixmap);
+  paint.setPen(Qt::green);
+  paint.drawText(550,450,timeString);
+
+
   ui->label->setPixmap(pixmap);
 
 
