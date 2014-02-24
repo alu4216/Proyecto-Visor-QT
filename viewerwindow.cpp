@@ -8,15 +8,20 @@ ViewerWindow::ViewerWindow(QWidget *parent) :
     ui(new Ui::ViewerWindow) //se crea el formulario
 {
 
-    QSettings  settings;
-    //para guardar las variables una vez cerrado el programa
+
     ui->setupUi(this); // se configura el formulario
-    movie = new QMovie();
+
+
+    //variables de configuración del programa
+    QSettings  settings;    //para guardar las variables una vez cerrado el programa
     indice=settings.value("indice").toInt();
     check=settings.value("check").toInt();
-    ui->checkBox->setChecked(check);
     indice=settings.value("indice").toInt();
+    ui->checkBox->setChecked(check);//inicia el check box en su ultimo valor tomado
 
+    //variables usadas en funciones
+    devices = QCamera::availableDevices();
+    movie = new QMovie();
 }
 
 ViewerWindow::~ViewerWindow()
@@ -27,6 +32,7 @@ ViewerWindow::~ViewerWindow()
     delete preferencias;
     delete camera;
     delete viewfinder;
+    delete captureBuffer;
 }
 
 void ViewerWindow::on_Salir_clicked()
@@ -133,10 +139,6 @@ void ViewerWindow::on_actionAcercaDe_triggered()
 
 void ViewerWindow::on_actionCapturar_triggered()
 {
-
-  devices = QCamera::availableDevices();
-
-
   camera = new QCamera(devices[indice]); // no permite capturar de la cam
   captureBuffer = new CaptureBuffer();
   camera->setViewfinder(captureBuffer); // selecionamos el visor instanciado anteriormente para nuestra captura
@@ -144,6 +146,7 @@ void ViewerWindow::on_actionCapturar_triggered()
   camera->start();//iniciamos la captura de imagene
 
   connect(captureBuffer,SIGNAL(s_image(QImage)),this,SLOT(image_s(QImage)));
+
   /*
   camera = new QCamera(devices[indice]); // no permite capturar de la cam
   viewfinder = new QCameraViewfinder();// nos permite seleccionar un visor para lo que capturamos
@@ -155,9 +158,21 @@ void ViewerWindow::on_actionCapturar_triggered()
 */
 }
 
+void ViewerWindow::image_s(const QImage &image) //mostramos cada frame convertido en imagen por el label
+{                                               //y lo pintamos para añadirle la hora del sistema
+
+  QTime time = QTime::currentTime();
+  QString timeString = time.toString();
+  QPixmap pixmap;
+  pixmap=pixmap.fromImage(image);
+  QPainter paint(&pixmap);
+  paint.setPen(Qt::green);
+  paint.drawText(550,450,timeString);
+  ui->label->setPixmap(pixmap);
+
+}
 void ViewerWindow::on_actionPreferencias_triggered()
 {
-    devices = QCamera::availableDevices();
     preferencias=new PreferenciaDialog(devices);
     preferencias->show();
     connect(preferencias,SIGNAL(s_camera(int)),this,SLOT(actualizar_s(int)));
@@ -167,24 +182,10 @@ void ViewerWindow::on_actionPreferencias_triggered()
 void ViewerWindow::actualizar_s(int i)
 {
     indice=i;
-    //on_actionCapturar_triggered();
-
+    camera->stop();
+    delete camera;
+    on_actionCapturar_triggered();
 }
-void ViewerWindow::image_s(const QImage &image)
-{
-  //QPainter paint;
-  QTime time = QTime::currentTime();
-  QString timeString = time.toString();
-  QPixmap pixmap;
-  pixmap=pixmap.fromImage(image);
-  QPainter paint(&pixmap);
-  paint.setPen(Qt::green);
-  paint.drawText(550,450,timeString);
 
-
-  ui->label->setPixmap(pixmap);
-
-
-}
 
 
