@@ -17,7 +17,8 @@ ViewerWindow::ViewerWindow(QWidget *parent) :
     ui->checkBox->setChecked(check);//inicia el check box en su ultimo valor tomado
 
     //variables usadas en funciones
-    movie= new QMovie();
+    camera= NULL;
+    movie=NULL;
     devices = QCamera::availableDevices();
 
 
@@ -46,6 +47,17 @@ void ViewerWindow::on_actionSalir_triggered()
 
 void ViewerWindow::on_actionAbrirImagen_triggered()
 {
+    if(movie!=NULL)
+    {
+        delete movie;
+        movie=NULL;
+    }
+    if(camera!=NULL)
+    {
+        camera->stop();
+        delete camera;
+        camera=NULL;
+    }
     QString fileName=QFileDialog::getOpenFileName(this,"abrir archivo",  //es un método estático por lo que no hace falta instanciar el objeto de la clase QFileDialog
 
                                                   QString());
@@ -85,12 +97,19 @@ void ViewerWindow::on_actionAbrirImagen_triggered()
 
 void ViewerWindow::on_actionAbrirVideo_triggered()
 {
-
-    if(movie->isValid()==true)
+    if(movie!=NULL)
     {
         delete movie;
-        movie=new QMovie();
+        movie=NULL;
     }
+    if(camera!=NULL)
+    {
+        camera->stop();
+        delete camera;
+        camera=NULL;
+    }
+
+    movie= new QMovie();
     QString fileName=QFileDialog::getOpenFileName(this,"abrir archivo de video",QString(),"video(*.mjpeg)");
     movie->setFileName(fileName);
 
@@ -142,7 +161,11 @@ void ViewerWindow::on_actionAcercaDe_triggered()
 
 void ViewerWindow::on_actionCapturar_triggered()
 {
-
+  if(movie!=NULL)
+  {
+      delete movie;
+      movie=NULL;
+  }
   camera = new QCamera(devices[indice]); // no permite capturar de la cam
   captureBuffer = new CaptureBuffer();
   camera->setViewfinder(captureBuffer); // selecionamos el visor instanciado anteriormente para nuestra captura
@@ -174,7 +197,8 @@ void ViewerWindow::image_s(const QImage &image) //mostramos cada frame convertid
   pixmap=pixmap.fromImage(image);
   QPainter paint(&pixmap);
   paint.setPen(Qt::green);
-  paint.drawText(550,450,timeString);
+
+  paint.drawText(0,0,pixmap.width(),pixmap.height(),Qt::AlignRight |Qt::AlignBottom ,timeString,0);
   ui->label->setPixmap(pixmap);
 
 }
@@ -183,14 +207,16 @@ void ViewerWindow::on_actionPreferencias_triggered()
     preferencias=new PreferenciaDialog(devices);
     preferencias->show();
     connect(preferencias,SIGNAL(s_camera(int)),this,SLOT(actualizar_s(int)));
-
 }
 
 void ViewerWindow::actualizar_s(int i)
 {
     indice=i;
+    if(camera!=NULL)
+    {
     camera->stop();
     delete camera;
+    }
     on_actionCapturar_triggered();
 }
 
