@@ -8,10 +8,7 @@ ViewerWindow::ViewerWindow(QWidget *parent) :
     ui(new Ui::ViewerWindow) //se crea el formulario
 {
 
-
     ui->setupUi(this); // se configura el formulario
-
-
     //variables de configuración del programa
     QSettings  settings;    //para guardar las variables una vez cerrado el programa
     indice=settings.value("indice").toInt();
@@ -20,14 +17,15 @@ ViewerWindow::ViewerWindow(QWidget *parent) :
     ui->checkBox->setChecked(check);//inicia el check box en su ultimo valor tomado
 
     //variables usadas en funciones
+    movie= new QMovie();
     devices = QCamera::availableDevices();
-    movie = new QMovie();
+
+
 }
 
 ViewerWindow::~ViewerWindow()
 {
     delete ui;
-    delete movie;
     delete dialog;
     delete preferencias;
     delete camera;
@@ -87,10 +85,14 @@ void ViewerWindow::on_actionAbrirImagen_triggered()
 
 void ViewerWindow::on_actionAbrirVideo_triggered()
 {
+
+    if(movie->isValid()==true)
+    {
+        delete movie;
+        movie=new QMovie();
+    }
     QString fileName=QFileDialog::getOpenFileName(this,"abrir archivo de video",QString(),"video(*.mjpeg)");
-
     movie->setFileName(fileName);
-
 
     if (!movie->isValid()) {
             QMessageBox::critical(this, tr("Error"),tr("No se pudo abrir el archivo o el formato"
@@ -108,6 +110,7 @@ void ViewerWindow::on_actionAbrirVideo_triggered()
      connect(ui->Push_Pausa,SIGNAL(clicked()),this,SLOT(on_Push_Pausa_clicked()));
 
    }
+
 }
 
 void ViewerWindow::on_Push_Pausa_clicked()
@@ -139,6 +142,7 @@ void ViewerWindow::on_actionAcercaDe_triggered()
 
 void ViewerWindow::on_actionCapturar_triggered()
 {
+
   camera = new QCamera(devices[indice]); // no permite capturar de la cam
   captureBuffer = new CaptureBuffer();
   camera->setViewfinder(captureBuffer); // selecionamos el visor instanciado anteriormente para nuestra captura
@@ -146,6 +150,9 @@ void ViewerWindow::on_actionCapturar_triggered()
   camera->start();//iniciamos la captura de imagene
 
   connect(captureBuffer,SIGNAL(s_image(QImage)),this,SLOT(image_s(QImage)));
+  connect(ui->push_Start,SIGNAL(clicked()),camera,SLOT(start()));
+  connect(ui->push_Stop,SIGNAL(clicked()),camera,SLOT(stop()));
+
 
   /*
   camera = new QCamera(devices[indice]); // no permite capturar de la cam
