@@ -134,7 +134,8 @@ void ViewerWindow::on_actionAbrirVideo_triggered()
 
 void ViewerWindow::on_Push_Pausa_clicked()
 {
-    movie->setPaused(true);
+    if(movie!=NULL)
+         movie->setPaused(true);
 
 }
 
