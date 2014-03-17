@@ -30,7 +30,6 @@ ViewerWindow::~ViewerWindow()
     delete dialog;
     delete preferencias;
     delete camera;
-    delete viewfinder;
     delete captureBuffer;
 }
 
