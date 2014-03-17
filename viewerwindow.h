@@ -67,10 +67,10 @@ private:
     QMovie * movie;
     Acerca * dialog;
     PreferenciaDialog * preferencias;
-    QList<QByteArray> devices;
     QCamera * camera;
     QCameraViewfinder * viewfinder;
     CaptureBuffer * captureBuffer;
+    QList<QByteArray> devices;
     int check;
     int indice;
 

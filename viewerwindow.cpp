@@ -7,7 +7,6 @@ ViewerWindow::ViewerWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ViewerWindow) //se crea el formulario
 {
-
     ui->setupUi(this); // se configura el formulario
     //variables de configuración del programa
     QSettings  settings;    //para guardar las variables una vez cerrado el programa
@@ -17,11 +16,12 @@ ViewerWindow::ViewerWindow(QWidget *parent) :
     ui->checkBox->setChecked(check);//inicia el check box en su ultimo valor tomado
 
     //variables usadas en funciones
-    camera= NULL;
+    camera=NULL;
     movie=NULL;
+    preferencias=NULL;
+    captureBuffer=NULL;
+    dialog = NULL;
     devices = QCamera::availableDevices();
-
-
 }
 
 ViewerWindow::~ViewerWindow()
@@ -69,25 +69,9 @@ void ViewerWindow::on_actionAbrirImagen_triggered()
         }
         else {
 
-          /*QTextStream stream (&file);
-            QString texto;
-            texto=stream.readAll();
-            ui->textEdit->setText(texto);
-          */
-
           QPixmap pixmap(fileName);
           ui->label->setPixmap(pixmap);
 
-          //*****************************************************
-          //QImageReader ir(&file);
-          //Qpixmap pixmap = QPixmap::fromImageReader(&ir);
-          // ui->label->setPixmap(pixmap);
-          //*****************************************************
-
-      /*   QWaitCondition wc; //variable de condición par que un hilo espere a un acontecimiento
-         QMutex mutex;//semaforo de binario. Para controlar los hilos. Duerme hilos para liberar cpu cuando no tienen nada que hacer
-         wc.wait(&mutex,5000); //esperar que un hilo despierte
-      */
         }
 
     }
@@ -149,7 +133,7 @@ void ViewerWindow::movie_frame(const QRect& rect)
 void ViewerWindow::on_checkBox_stateChanged(int arg1)
 {
     QSettings  settings;
-  settings.setValue("check",arg1);
+    settings.setValue("check",arg1);
 }
 
 void ViewerWindow::on_actionAcercaDe_triggered()
@@ -177,9 +161,8 @@ void ViewerWindow::on_actionCapturar_triggered()
   connect(ui->push_Start,SIGNAL(clicked()),camera,SLOT(start()));
   connect(ui->push_Stop,SIGNAL(clicked()),camera,SLOT(stop()));
 
-
-  /*
-  camera = new QCamera(devices[indice]); // no permite capturar de la cam
+  /* Codigo sin el visor
+  camera = new QCamera(devices[indice]); // nos permite capturar de la cam
   viewfinder = new QCameraViewfinder();// nos permite seleccionar un visor para lo que capturamos
   camera->setViewfinder(viewfinder); // selecionamos el visor instanciado anteriormente para nuestra captura
   viewfinder->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);//añadimos las politicas para nuestro visor
